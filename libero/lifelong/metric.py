@@ -14,6 +14,8 @@ from libero.libero.envs import OffScreenRenderEnv, SubprocVectorEnv, DummyVector
 from libero.libero.utils.time_utils import Timer
 from libero.libero.utils.video_utils import VideoWriter
 from libero.lifelong.utils import *
+import multiprocessing
+from myplan.utils.configclass import PlanTrainConfig
 
 
 def raw_obs_to_tensor_obs(obs, task_emb, cfg):
@@ -58,6 +60,8 @@ def evaluate_one_task_success(
                 evaluation, mainly for visualization and debugging purpose
     task_str:   the key to access sim_states dictionary
     """
+    if multiprocessing.get_start_method(allow_none=True) != "spawn":  
+        multiprocessing.set_start_method("spawn", force=True)
     with Timer() as t:
         if cfg.lifelong.algo == "PackNet":  # need preprocess weights for PackNet
             algo = algo.get_eval_algo(task_id)
@@ -194,20 +198,20 @@ def evaluate_multitask_training_success(cfg, algo, benchmark, task_ids):
 
 
 @torch.no_grad()
-def evaluate_loss(cfg, algo, benchmark, datasets):
+def evaluate_loss(cfg: PlanTrainConfig, algo, benchmark, datasets):
     """
     Evaluate the loss on all datasets.
     """
     algo.eval()
     losses = []
     for i, dataset in enumerate(datasets):
-        if cfg.lifelong.algo == "PackNet":  # need preprocess weights for PackNet
-            algo = algo.get_eval_algo(task_id=i)
+        # if cfg.lifelong.algo == "PackNet":  # need preprocess weights for PackNet
+        #     algo = algo.get_eval_algo(task_id=i)
 
         dataloader = DataLoader(
             dataset,
-            batch_size=cfg.eval.batch_size,
-            num_workers=cfg.eval.num_workers,
+            batch_size=cfg.train_config.eval_config.batch_size,
+            num_workers=cfg.train_config.eval_config.num_workers,
             shuffle=False,
         )
         test_loss = 0
