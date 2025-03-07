@@ -19,7 +19,7 @@ gym_new_venv_step_type = Tuple[
 ]
 warnings.simplefilter("once", DeprecationWarning)
 _NP_TO_CT = {
-    np.bool_: ctypes.c_bool,
+    bool: ctypes.c_bool,
     np.uint8: ctypes.c_uint8,
     np.uint16: ctypes.c_uint16,
     np.uint32: ctypes.c_uint32,
